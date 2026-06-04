@@ -6,23 +6,7 @@ const cors = require("cors");
 const app = express();
 const server = http.createServer(app);
 
-// ---------------- TABLES ----------------
-let tables = {
-  1: { id: 1, status: "empty" },
-  2: { id: 2, status: "empty" },
-  3: { id: 3, status: "empty" },
-  4: { id: 4, status: "empty" },
-  5: { id: 5, status: "empty" },
-  6: { id: 6, status: "empty" },
-  7: { id: 7, status: "empty" },
-  8: { id: 8, status: "empty" },
-  9: { id: 9, status: "empty" },
-  10: { id: 10, status: "empty" },
-  11: { id: 11, status: "empty" },
-  12: { id: 12, status: "empty" },
-};
-
-// ---------------- CORS ----------------
+// ================= CORS =================
 app.use(
   cors({
     origin: "*",
@@ -33,11 +17,215 @@ app.use(
 
 app.use(express.json());
 
-app.get("/tables", (req, res) => {
-  res.json(tables);
-});
+// ================= MENU DATA (NOW IN BACKEND) =================
+const menuData = {
+  boissons: [
+    [
+      {
+        title: "Italiano",
+        description: "description goes here",
+        img: "italiano.jpg",
+        type: "boissons",
+        price: 10,
+        id: 1,
+      },
+      {
+        title: "Americano",
+        description: "description goes here",
+        img: "italiano.jpg",
+        type: "boissons",
+        price: 10,
+        id: 2,
+      },
+    ],
 
-// ---------------- SOCKET ----------------
+    [
+      {
+        title: "Italiano",
+        description: "description goes here",
+        img: "italiano.jpg",
+        type: "boissons",
+        price: 10,
+        id: 1,
+      },
+      {
+        title: "Americano",
+        description: "description goes here",
+        img: "italiano.jpg",
+        type: "boissons",
+        price: 10,
+        id: 2,
+      },
+    ],
+    [
+      {
+        title: "mangoJuice",
+        description: "description goes here",
+        img: "mangoJuice.jpg",
+        type: "boissons",
+        price: 13,
+        id: 3,
+      },
+      {
+        title: "Kiwi Juice",
+        img: "kiwiJuice.jpg",
+        type: "boissons",
+        description: "description goes here",
+        price: 13,
+        id: 4,
+      },
+    ],
+    [
+      {
+        title: "Orange Juice",
+        img: "OrangeJuice.jpg",
+        description: "description goes here",
+        type: "boissons",
+        price: 22,
+        id: 5,
+      },
+      {
+        title: "Lemon Juice",
+        description: "description goes here",
+        img: "lemonJuice.jpg",
+        type: "boissons",
+        price: 24,
+        id: 6,
+      },
+    ],
+  ],
+
+  boulangerie: [
+    [
+      {
+        title: "Creme Amande mini",
+        description: "description goes here",
+        img: "cremeAmande.jpg",
+        type: "boulangerie",
+        price: 2.5,
+        id: 7,
+      },
+      {
+        title: "Pain suisse mini",
+        description: "description goes here",
+        img: "painSuisse.jpg",
+        type: "boulangerie",
+        price: 2.5,
+        id: 8,
+      },
+    ],
+    [
+      {
+        title: "Creme Amande big",
+        description: "description goes here",
+        img: "cremeAmande.jpg",
+        type: "boulangerie",
+        price: 5,
+        id: 9,
+      },
+      {
+        title: "Pain suise big",
+        description: "description goes here",
+        img: "painSuisse.jpg",
+        type: "boulangerie",
+        price: 8,
+        id: 10,
+      },
+    ],
+  ],
+
+  petitDejeuner: [
+    [
+      {
+        title: "Continental BreakFast",
+        description: "description goes here",
+        img: "continentalBreakFast.jpg",
+        type: "petitDejeuner",
+        price: 20,
+        id: 11,
+      },
+      {
+        title: "American BreakFast",
+        description: "description goes here",
+        img: "americanBreakFast.jpg",
+        type: "petitDejeuner",
+        price: 25,
+        id: 12,
+      },
+    ],
+    [
+      {
+        title: "Chineese petitDejeuner",
+        description: "Chineese petitDejeuner perfect for the morning ",
+        img: "chineeseBreakFast.jpg",
+        type: "petitDejeuner",
+        price: 30,
+        id: 13,
+      },
+
+      {
+        title: "Chineese petitDejeuner",
+        description: "Chineese petitDejeuner perfect for the morning ",
+        img: "chineeseBreakFast.jpg",
+        type: "petitDejeuner",
+        price: 30,
+        id: 14,
+      },
+    ],
+  ],
+
+  glaces: [
+    [
+      {
+        title: "Chocolate",
+        description: "description goes here",
+        img: "chocolateIceCream.jpg",
+        type: "glaces",
+        price: 30,
+        id: 17,
+      },
+      {
+        title: "Pistashu",
+        description: "description goes here",
+        img: "pistashuIceCream.jpg",
+        type: "glaces",
+        price: 40,
+        id: 18,
+      },
+    ],
+    [
+      {
+        title: "Vanilla",
+        description: "description goes here",
+        img: "vanillaIceCream.jpg",
+        type: "glaces",
+        price: 30,
+        id: 19,
+      },
+      {
+        title: "Strawberry",
+        description: "description goes here",
+        img: "strawberryIceCream.jpg",
+        type: "glaces",
+        price: 30,
+        id: 20,
+      },
+    ],
+  ],
+};
+// ================= TABLES =================
+let tables = {};
+for (let i = 1; i <= 12; i++) {
+  tables[i] = { id: i, status: "empty" };
+}
+
+// ================= ORDERS =================
+let orders = {};
+
+// ================= HISTORY =================
+let orderHistory = [];
+
+// ================= SOCKET =================
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -45,10 +233,55 @@ const io = new Server(server, {
   },
 });
 
-// ---------------- DATA ----------------
-let orders = {};
+// ================= HELPERS =================
+function archiveOrder(tableId, finalStatus) {
+  if (!orders[tableId]) return;
 
-// ---------------- CREATE ORDER ----------------
+  const historyEntry = {
+    id: Date.now(),
+    tableNumber: tableId,
+    order: orders[tableId].order,
+    status: finalStatus,
+    archivedAt: new Date().toISOString(),
+  };
+
+  orderHistory.push(historyEntry);
+}
+
+// ================= MENU ROUTES =================
+app.get("/menu", (req, res) => {
+  res.json(menuData);
+});
+
+app.get("/menu/:category", (req, res) => {
+  const category = req.params.category;
+
+  if (!menuData[category]) {
+    return res.status(404).json({ error: "Category not found" });
+  }
+
+  res.json(menuData[category]);
+});
+
+// ================= TABLES =================
+app.get("/tables", (req, res) => {
+  res.json(tables);
+});
+
+// ================= ORDERS =================
+app.get("/orders", (req, res) => {
+  res.json(orders);
+});
+
+// ================= HISTORY =================
+app.get("/history", (req, res) => {
+  res.json({
+    count: orderHistory.length,
+    data: orderHistory,
+  });
+});
+
+// ================= CREATE ORDER =================
 app.post("/orders", (req, res) => {
   const { tableNumber, order } = req.body;
 
@@ -56,29 +289,24 @@ app.post("/orders", (req, res) => {
     return res.status(400).json({ error: "Invalid order" });
   }
 
-  // Save order by table number
   orders[tableNumber] = {
     tableNumber,
     order,
+    createdAt: new Date().toISOString(),
   };
 
-  // 🔥 Update table status
-  if (tables[tableNumber]) {
-    tables[tableNumber].status = "ordered";
-  }
+  tables[tableNumber].status = "ordered";
 
-  // 🔥 Emit updates
   io.emit("new-order", orders);
   io.emit("tables-update", tables);
 
   return res.status(201).json({
-    message: "Order created",
+    success: true,
     order: orders[tableNumber],
   });
 });
 
-// ---------------- UPDATE TABLE ----------------
-
+// ================= UPDATE STATUS =================
 app.patch("/tables/:id/status", (req, res) => {
   const id = req.params.id;
   const { action } = req.body;
@@ -92,9 +320,8 @@ app.patch("/tables/:id/status", (req, res) => {
       tables[id].status = "confirmed";
       break;
 
-    case "cancel":
-      tables[id].status = "empty";
-      delete orders[id];
+    case "ready":
+      tables[id].status = "ready";
       break;
 
     case "served":
@@ -107,36 +334,29 @@ app.patch("/tables/:id/status", (req, res) => {
 
     case "paid":
       tables[id].status = "empty";
+      archiveOrder(id, "paid");
+      delete orders[id];
+      break;
+
+    case "cancel":
+      tables[id].status = "empty";
+      archiveOrder(id, "cancelled");
       delete orders[id];
       break;
 
     default:
-      return res.status(400).json({
-        error: "Invalid action",
-        received: action,
-      });
+      return res.status(400).json({ error: "Invalid action" });
   }
 
-  // 🔥 1. WAITER DASHBOARD (ALL TABLES)
   io.emit("tables-update", tables);
-
-  // 🔥 2. CUSTOMER (ONLY ONE TABLE)
-  io.emit("table-update", {
-    tableId: id,
-    status: tables[id].status,
-  });
 
   return res.json({
     success: true,
     table: tables[id],
   });
 });
-// ---------------- GET ORDERS ----------------
-app.get("/orders", (req, res) => {
-  res.json(orders);
-});
 
-// ---------------- START SERVER ----------------
+// ================= START SERVER =================
 server.listen(3005, () => {
   console.log("Server running on port 3005");
 });
