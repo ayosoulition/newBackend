@@ -1,4 +1,6 @@
 const express = require("express");
+
+const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
@@ -18,6 +20,7 @@ app.use(
   }),
 );
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 
 // ================= SOCKET =================
@@ -85,7 +88,34 @@ function archiveOrder(tableId, finalStatus) {
   });
 }
 
+const multer = require("multer");
+
+// ================= IMAGE UPLOAD CONFIG =================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
+
 // ================= MENU ROUTES =================
+
+app.post("/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  res.json({
+    success: true,
+    filename: req.file.filename,
+    url: `http://localhost:3005/uploads/${req.file.filename}`,
+  });
+});
 
 // GET FULL MENU
 app.get("/menu", (req, res) => {
@@ -114,9 +144,9 @@ app.post("/menu/:category", (req, res) => {
 
   const item = {
     ...newItem,
+    img: newItem.img ? `http://localhost:3005/uploads/${newItem.img}` : "",
     id: getMaxId() + 1,
   };
-
   const flat = flattenCategory(menuData[category]);
   flat.push(item);
 
@@ -150,7 +180,7 @@ app.put("/menu/:category/:itemId", (req, res) => {
           price: price ?? item.price,
           title: title ?? item.title,
           description: description ?? item.description,
-          img: img ?? item.img,
+          img: img ? `http://localhost:3005/uploads/${img}` : item.img,
         };
       }
       return item;
