@@ -1,19 +1,19 @@
-const IMG_BASE = "http://localhost:3005/uploads/";
+const IMG_BASE = "http://192.168.1.86:3005/uploads/";
 
 const menuData = {
   boissons: [
     [
       {
-        title: "Italiano",
-        description: "description goes here",
+        title: "Café Italiano",
+        description: "Espresso intense au goût corsé et à la crème onctueuse",
         img: `${IMG_BASE}italiano.jpg`,
         type: "boissons",
         price: 10,
         id: 1,
       },
       {
-        title: "Americano",
-        description: "description goes here",
+        title: "Café Americano",
+        description: "Espresso allongé, doux et équilibré",
         img: `${IMG_BASE}italiano.jpg`,
         type: "boissons",
         price: 10,
@@ -23,16 +23,16 @@ const menuData = {
 
     [
       {
-        title: "Italiano",
-        description: "description goes here",
+        title: "Café Italiano",
+        description: "Espresso intense au goût corsé et à la crème onctueuse",
         img: `${IMG_BASE}italiano.jpg`,
         type: "boissons",
         price: 10,
         id: 3,
       },
       {
-        title: "Americano",
-        description: "description goes here",
+        title: "Café Americano",
+        description: "Espresso allongé, doux et équilibré",
         img: `${IMG_BASE}italiano.jpg`,
         type: "boissons",
         price: 10,
@@ -41,34 +41,34 @@ const menuData = {
     ],
     [
       {
-        title: "mangoJuice",
-        description: "description goes here",
+        title: "Jus de Mangue",
+        description: "Jus de mangue fraîche pressée, sucré et tropical",
         img: `${IMG_BASE}mangoJuice.jpg`,
         type: "boissons",
         price: 13,
         id: 5,
       },
       {
-        title: "Kiwi Juice",
+        title: "Jus de Kiwi",
         img: `${IMG_BASE}kiwiJuice.jpg`,
         type: "boissons",
-        description: "description goes here",
+        description: "Jus de kiwi rafraîchissant, riche en vitamine C",
         price: 13,
         id: 6,
       },
     ],
     [
       {
-        title: "Orange Juice",
+        title: "Jus d'Orange",
         img: `${IMG_BASE}OrangeJuice.jpg`,
-        description: "description goes here",
+        description: "Jus d'orange pressé minute, naturel et vitaminé",
         type: "boissons",
         price: 22,
         id: 7,
       },
       {
-        title: "Lemon Juice",
-        description: "description goes here",
+        title: "Jus de Citron",
+        description: "Citronnade fraîche légèrement sucrée et désaltérante",
         img: `${IMG_BASE}lemonJuice.jpg`,
         type: "boissons",
         price: 24,
@@ -80,16 +80,16 @@ const menuData = {
   boulangerie: [
     [
       {
-        title: "Creme Amande mini",
-        description: "description goes here",
+        title: "Crème d'Amande Mini",
+        description: "Viennoiserie feuilletée garnie de crème d'amande dorée",
         img: `${IMG_BASE}cremeAmande.jpg`,
         type: "boulangerie",
         price: 2.5,
         id: 8,
       },
       {
-        title: "Pain suisse mini",
-        description: "description goes here",
+        title: "Pain Suisse Mini",
+        description: "Pain suisse moelleux aux pépites de chocolat et crème pâtissière",
         img: `${IMG_BASE}painSuisse.jpg`,
         type: "boulangerie",
         price: 2.5,
@@ -98,16 +98,16 @@ const menuData = {
     ],
     [
       {
-        title: "Creme Amande big",
-        description: "description goes here",
+        title: "Crème d'Amande Grand",
+        description: "Grande viennoiserie feuilletée généreusement garnie de crème d'amande",
         img: `${IMG_BASE}cremeAmande.jpg`,
         type: "boulangerie",
         price: 5,
         id: 1,
       },
       {
-        title: "Pain suise big",
-        description: "description goes here",
+        title: "Pain Suisse Grand",
+        description: "Grand pain suisse moelleux aux pépites de chocolat et crème pâtissière",
         img: `${IMG_BASE}painSuisse.jpg`,
         type: "boulangerie",
         price: 8,
@@ -119,16 +119,16 @@ const menuData = {
   petitDejeuner: [
     [
       {
-        title: "Continental BreakFast",
-        description: "description goes here",
+        title: "Petit Déjeuner Continental",
+        description: "Café, jus d'orange, viennoiserie, beurre et confiture",
         img: `${IMG_BASE}continentalBreakFast.jpg`,
         type: "petitDejeuner",
         price: 20,
         id: 11,
       },
       {
-        title: "American BreakFast",
-        description: "description goes here",
+        title: "Petit Déjeuner Américain",
+        description: "Œufs, bacon, toast, pancakes et café ou jus de fruits",
         img: `${IMG_BASE}americanBreakFast.jpg`,
         type: "petitDejeuner",
         price: 25,
@@ -137,8 +137,8 @@ const menuData = {
     ],
     [
       {
-        title: "Chineese petitDejeuner",
-        description: "Chineese petitDejeuner perfect for the morning ",
+        title: "Petit Déjeuner Asiatique",
+        description: "Sélection de mets asiatiques légers, idéale pour bien démarrer la journée",
         img: `${IMG_BASE}chineeseBreakFast.jpg`,
         type: "petitDejeuner",
         price: 30,
@@ -146,8 +146,8 @@ const menuData = {
       },
 
       {
-        title: "Chineese petitDejeuner",
-        description: "Chineese petitDejeuner perfect for the morning ",
+        title: "Petit Déjeuner Asiatique",
+        description: "Sélection de mets asiatiques légers, idéale pour bien démarrer la journée",
         img: `${IMG_BASE}chineeseBreakFast.jpg`,
         type: "petitDejeuner",
         price: 30,
@@ -159,16 +159,16 @@ const menuData = {
   glaces: [
     [
       {
-        title: "Chocolate",
-        description: "description goes here",
+        title: "Glace Chocolat",
+        description: "Glace onctueuse au chocolat noir belge, intense et gourmande",
         img: `${IMG_BASE}chocolateIceCream.jpg`,
         type: "glaces",
         price: 30,
         id: 17,
       },
       {
-        title: "Pistashu",
-        description: "description goes here",
+        title: "Glace Pistache",
+        description: "Glace crémeuse à la pistache de Sicile, douce et parfumée",
         img: `${IMG_BASE}pistashuIceCream.jpg`,
         type: "glaces",
         price: 40,
@@ -177,16 +177,16 @@ const menuData = {
     ],
     [
       {
-        title: "Vanilla",
-        description: "description goes here",
+        title: "Glace Vanille",
+        description: "Glace à la vanille de Madagascar, douce et fondante",
         img: `${IMG_BASE}vanillaIceCream.jpg`,
         type: "glaces",
         price: 30,
         id: 19,
       },
       {
-        title: "Strawberry",
-        description: "description goes here",
+        title: "Glace Fraise",
+        description: "Glace aux fraises fraîches, légère et acidulée",
         img: `${IMG_BASE}strawberryIceCream.jpg`,
         type: "glaces",
         price: 30,
