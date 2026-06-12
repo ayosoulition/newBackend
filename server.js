@@ -1,8 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const http = require("http");
-const { Server } = require("socket.io");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -22,7 +20,6 @@ const PORT = process.env.PORT || 3005;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const app = express();
-const server = http.createServer(app);
 
 // ================= CORS =================
 const corsOptions = {
@@ -34,19 +31,35 @@ app.use(cors(corsOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 
-// ================= SOCKET =================
-const io = new Server(server, {
-  cors: {
-    origin: (origin, callback) => callback(null, origin || "*"),
-    methods: ["GET", "POST"],
-  },
-  transports: ["polling", "websocket"],
-});
+// ================= DB INIT =================
+let dbInitialized = false;
 
-io.on("connection", (socket) => {
-  socket.on("server-join", ({ serverId }) => {
-    if (serverId) socket.join(`server-${serverId}`);
-  });
+async function ensureDB() {
+  if (dbInitialized && mongoose.connection.readyState === 1) return;
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
+    console.log("✓ MongoDB connected");
+  }
+  if (!dbInitialized) {
+    await seedDatabase();
+    await migrateOrderFields();
+    await migrateMenuLanguage();
+    await migrateMenuImages();
+    dbInitialized = true;
+  }
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await ensureDB();
+    next();
+  } catch (err) {
+    console.error("DB error:", err.message);
+    res.status(500).json({ error: "Database connection failed" });
+  }
 });
 
 // ================= MENU HELPERS =================
@@ -171,7 +184,7 @@ app.post("/login", async (req, res) => {
 
 app.get("/me", authenticate, (req, res) => res.json(req.user));
 
-// ================= IMAGE UPLOAD =================
+// ================= IMAGE UPLOAD ROUTE =================
 app.post(
   "/upload",
   authenticate,
@@ -219,8 +232,6 @@ app.post("/menu/:category", authenticate, authorize("admin"), async (req, res) =
       id: (await getMaxId()) + 1,
     };
     await MenuItem.create(item);
-    const menuData = await buildMenuData();
-    io.emit("menu-update", menuData);
     res.status(201).json({ success: true, item });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -243,8 +254,6 @@ app.put("/menu/:category/:itemId", authenticate, authorize("admin"), async (req,
     if (img) update.img = `${BASE_URL}/uploads/${img}`;
 
     await MenuItem.updateOne({ id: Number(itemId) }, update);
-    const menuData = await buildMenuData();
-    io.emit("menu-update", menuData);
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -259,8 +268,6 @@ app.delete("/menu/:category/:itemId", authenticate, authorize("admin"), async (r
     const result = await MenuItem.deleteOne({ id: Number(itemId), type: category });
     if (result.deletedCount === 0) return res.status(404).json({ error: "Item not found" });
 
-    const menuData = await buildMenuData();
-    io.emit("menu-update", menuData);
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -297,10 +304,7 @@ app.post("/orders", async (req, res) => {
     );
     await Table.updateOne({ id: numTable }, { status: "ordered" });
 
-    const [orders, tables] = await Promise.all([getOrders(), getTables()]);
-    io.emit("new-order", orders);
-    io.emit("tables-update", tables);
-
+    const orders = await getOrders();
     res.status(201).json({ success: true, order: orders[numTable] });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -317,7 +321,6 @@ app.patch("/tables/:id/bill", async (req, res) => {
       return res.status(400).json({ error: "Table is not in a billable state" });
 
     await Table.updateOne({ id: numId }, { status: "bill" });
-    io.emit("tables-update", await getTables());
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -349,10 +352,6 @@ app.patch("/tables/:id/status", authenticate, async (req, res) => {
         if (userRole !== "caisse")
           return res.status(403).json({ error: "Only kitchen can mark orders as ready" });
         await Table.updateOne({ id: numId }, { status: "ready" });
-        if (table.serverId) {
-          io.to(`server-${table.serverId}`).emit("order-ready", { tableId: req.params.id });
-        }
-        io.emit("tables-update", await getTables());
         return res.json({ success: true });
 
       case "served":
@@ -386,7 +385,6 @@ app.patch("/tables/:id/status", authenticate, async (req, res) => {
     }
 
     const tables = await getTables();
-    io.emit("tables-update", tables);
     return res.json({ success: true, table: tables[numId] });
   } catch {
     res.status(500).json({ error: "Server error" });
@@ -394,11 +392,8 @@ app.patch("/tables/:id/status", authenticate, async (req, res) => {
 });
 
 // ================= DATA MIGRATION =================
-// Fixes documents where Mongoose [Mixed] schema cast the order object into a
-// single-element array: [{boissons:[...]}] → {boissons:[...]}
 async function migrateOrderFields() {
   let fixed = 0;
-
   const orders = await Order.find({}).lean();
   for (const doc of orders) {
     if (
@@ -407,14 +402,10 @@ async function migrateOrderFields() {
       !Array.isArray(doc.order[0]) &&
       typeof doc.order[0] === "object"
     ) {
-      await Order.collection.updateOne(
-        { _id: doc._id },
-        { $set: { order: doc.order[0] } },
-      );
+      await Order.collection.updateOne({ _id: doc._id }, { $set: { order: doc.order[0] } });
       fixed++;
     }
   }
-
   const histories = await OrderHistory.find({}).lean();
   for (const doc of histories) {
     if (
@@ -423,14 +414,10 @@ async function migrateOrderFields() {
       !Array.isArray(doc.order[0]) &&
       typeof doc.order[0] === "object"
     ) {
-      await OrderHistory.collection.updateOne(
-        { _id: doc._id },
-        { $set: { order: doc.order[0] } },
-      );
+      await OrderHistory.collection.updateOne({ _id: doc._id }, { $set: { order: doc.order[0] } });
       fixed++;
     }
   }
-
   if (fixed > 0) console.log(`✓ Migrated ${fixed} document(s) with legacy order format`);
 }
 
@@ -509,23 +496,16 @@ async function migrateMenuLanguage() {
   if (updated > 0) console.log(`✓ Menu translated to French (${updated} items updated)`);
 }
 
-// ================= START =================
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-  })
-  .then(async () => {
-    console.log("✓ MongoDB connected");
-    await seedDatabase();
-    await migrateOrderFields();
-    await migrateMenuLanguage();
-    await migrateMenuImages();
-    server.listen(PORT, () => console.log(`✓ Server running on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("✗ MongoDB connection failed:", err.message);
-    console.error("  → Check: correct URI in .env, and your IP is whitelisted in MongoDB Atlas");
-    console.error("    (Atlas: Network Access → Add IP Address → Allow access from anywhere)");
-    process.exit(1);
-  });
+// ================= START (local only) =================
+if (require.main === module) {
+  ensureDB()
+    .then(() => {
+      app.listen(PORT, () => console.log(`✓ Server running on port ${PORT}`));
+    })
+    .catch((err) => {
+      console.error("✗ MongoDB connection failed:", err.message);
+      process.exit(1);
+    });
+}
+
+module.exports = app;
