@@ -25,17 +25,22 @@ const app = express();
 const server = http.createServer(app);
 
 // ================= CORS =================
-app.use(cors({
-  origin: "*",
+const corsOptions = {
+  origin: (origin, callback) => callback(null, origin || "*"),
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-}));
+};
+app.use(cors(corsOptions));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.json());
 
 // ================= SOCKET =================
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] },
+  cors: {
+    origin: (origin, callback) => callback(null, origin || "*"),
+    methods: ["GET", "POST"],
+  },
+  transports: ["polling", "websocket"],
 });
 
 io.on("connection", (socket) => {
