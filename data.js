@@ -1,4 +1,4 @@
-const IMG_BASE = "http://192.168.1.86:3005/uploads/";
+const IMG_BASE = `${process.env.BASE_URL || "http://localhost:3005"}/uploads/`;
 
 const menuData = {
   boissons: [

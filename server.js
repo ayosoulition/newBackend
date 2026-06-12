@@ -475,6 +475,21 @@ async function seedDatabase() {
   }
 }
 
+// ================= MENU IMAGE MIGRATION =================
+async function migrateMenuImages() {
+  const allItems = Object.values(rawMenuData).flatMap((pages) => pages.flat());
+  let updated = 0;
+  for (const item of allItems) {
+    const dbItem = await MenuItem.findOne({ id: item.id }).lean();
+    if (!dbItem) continue;
+    if (dbItem.img !== item.img) {
+      await MenuItem.updateOne({ id: item.id }, { $set: { img: item.img } });
+      updated++;
+    }
+  }
+  if (updated > 0) console.log(`✓ Menu images updated (${updated} items)`);
+}
+
 // ================= MENU LANGUAGE MIGRATION =================
 async function migrateMenuLanguage() {
   const allItems = Object.values(rawMenuData).flatMap((pages) => pages.flat());
@@ -500,6 +515,7 @@ mongoose
     await seedDatabase();
     await migrateOrderFields();
     await migrateMenuLanguage();
+    await migrateMenuImages();
     server.listen(PORT, () => console.log(`✓ Server running on port ${PORT}`));
   })
   .catch((err) => {
