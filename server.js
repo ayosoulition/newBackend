@@ -45,17 +45,20 @@ async function ensureDB() {
   if (dbInitialized && mongoose.connection.readyState === 1) return;
   if (mongoose.connection.readyState !== 1) {
     await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+      bufferCommands: false,
     });
     console.log("✓ MongoDB connected");
   }
   if (!dbInitialized) {
-    await seedDatabase();
-    await migrateOrderFields();
-    await migrateMenuLanguage();
-    await migrateMenuImages();
     dbInitialized = true;
+    seedDatabase()
+      .then(() => migrateOrderFields())
+      .then(() => migrateMenuLanguage())
+      .then(() => migrateMenuImages())
+      .catch((err) => console.error("Init error:", err.message));
   }
 }
 
